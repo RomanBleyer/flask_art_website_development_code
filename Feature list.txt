@@ -1,0 +1,24 @@
+User registration and login
+Password encryption
+Product listings with grid layout
+Product detail pages
+Product image display (fixed size, high quality)
+Product search with autocomplete recommendations
+Product filters (category, price, rating, availability)
+Pagination and per-page selection for products
+Quick add to cart from product listings
+Shopping cart with add/remove/update functionality
+Checkout and order confirmation
+User reviews and ratings (displayed on product pages)
+Average rating and review count display
+Favorites/wishlist (add to favorites from listings)
+Seller dashboard and profile
+Auctions (live, ending soon, boat auctions)
+Admin dashboard and product management
+Responsive design for desktop and mobile
+Dark mode and light mode support
+Branding: logo, name, favicon, manifest updates
+Sample data setup for products and reviews
+PWA support (manifest, service worker)
+Footer and navigation bar with sidebar
+Privacy, terms, help, about, contact pages
