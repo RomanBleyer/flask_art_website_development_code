@@ -15,6 +15,21 @@ def index():
     conn.close()
     return render_template('homepage.html', products=products)
 
+@app.route('/storefront')
+def storefront():
+    conn = get_db_connection()
+    products = conn.execute('SELECT * FROM products').fetchall()
+    conn.close()
+    return render_template('storefront.html', products=products)
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
 
