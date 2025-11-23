@@ -1,29 +1,14 @@
-REQUIREMENTS FOR YOUR IST TASK
-complete these and only these
+FEATURES OF THIS website
 
-you should have products(lmao) done
-you need a proper working shopping card that can remove items add them etc done
-
-you NEED a checkout form that asks for email address address name
-
-you NEED to log all orders into their own database section
-
-
-TASKBAR FEATURES
-actually make the search bar work(lol)
-have an admin mode which just lets you remove and add products in the website
-YOU NEED to store passwords in hashes, you need password validation, and basic password strength checking
-
-
-you NEED local cashing of products
-an installable PWA app
-Push notifications
-
-EXTRA LOG IN LOG OUT FEATURES
-login logout signup features
-you NEED a checkout form that asks for email address address name
-you NEED to log all orders into their own database section
-
-RESPONSIVE design
-
-Make the website work offline without images 
+•	Display a product catalogue (name, description, price, image).
+•	Allow users to add, update, and remove items from a shopping cart (stored in session).
+•	Provide a checkout form collecting name, email, and address, saving orders to the database.
+•	Include user authentication (register/login/logout).
+•	Implement CRUD operations for products (admin-only).
+•	Use a responsive design that functions well on mobile and desktop
+Secure practices like password hashing, validation, safe inputs 
+local caching of products 
+installable “store app”
+Search bar
+Tag based Searching
+featured products

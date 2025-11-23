@@ -1,13 +1,101 @@
+from flask import jsonify
 from flask import Flask, render_template, session, request, jsonify, redirect, url_for
 import sqlite3
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-for-sessions'  # Change this to a random secret key
+app.secret_key = 'some-idiot-told-me-to-change-this' 
+
+
+@app.route('/search_suggestions')
+def search_suggestions():
+    query = request.args.get('q', '').strip().lower()
+    conn = get_db_connection()
+    suggestions = []
+    if query and conn:
+        rows = conn.execute('SELECT id, name, image FROM products WHERE stock > 0 AND LOWER(name) LIKE ?', (f'%{query}%',)).fetchall()
+        for row in rows:
+            suggestions.append({'id': row['id'], 'name': row['name'], 'image': row['image']})
+        conn.close()
+    return jsonify(suggestions)
+
+# Route for single product view
+@app.route('/product/<int:product_id>')
+def single_product_view(product_id):
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    conn.close()
+    if not product:
+        return redirect(url_for('storefront'))
+    return render_template('Search_And_Storefront_Pages/single_product_view.html', product=product)
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '').strip()
+    conn = get_db_connection()
+    results = []
+    if query and conn:
+        rows = conn.execute('SELECT * FROM products WHERE stock > 0 AND (LOWER(name) LIKE ? OR LOWER(description) LIKE ? OR LOWER(original_artist) LIKE ?)', (f'%{query.lower()}%', f'%{query.lower()}%', f'%{query.lower()}%')).fetchall()
+        for row in rows:
+            results.append(dict(row))
+        conn.close()
+    return render_template('Search_And_Storefront_Pages/main_search_results.html', results=results, search_term=query)
+
+
+# Route to render add product page and handle product addition
+@app.route('/admin/add_product', methods=['GET', 'POST'])
+def admin_add_product_page():
+    if not session.get('user') or not session.get('is_admin'):
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        name = request.form['name']
+        original_artist = request.form['original_artist']
+        price = float(request.form['price'])
+        image = request.form.get('image', '')
+        painting_orientation = request.form.get('painting_orientation', '')
+        price_range = request.form.get('price_range', '')
+        date_category = request.form.get('date_category', '')
+        art_movement = request.form.get('art_movement', '')
+        painting_type = request.form.get('painting_type', '')
+        stock = int(request.form.get('stock', 1))
+        description = request.form.get('description', '')
+
+        # Handle image upload
+        if 'image' in request.files and request.files['image'].filename:
+            image_file = request.files['image']
+            image = image_file.filename
+            product_images_path = os.path.join('static', 'Product Images', image)
+            image_file.save(product_images_path)
+
+        conn = get_db_connection()
+        conn.execute('INSERT INTO products (name, original_artist, price, image, painting_orientation, price_range, date_category, art_movement, painting_type, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                     (name, original_artist, price, image, painting_orientation, price_range, date_category, art_movement, painting_type, stock, description))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_panel'))
+    return render_template('Admin_Pages/add_product_page.html')
+
+# Route to render edit product page
+@app.route('/admin/edit_product/<int:product_id>', methods=['GET'])
+def admin_edit_product_page(product_id):
+    if not session.get('user') or not session.get('is_admin'):
+        return redirect(url_for('index'))
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    conn.close()
+    if not product:
+        return redirect(url_for('admin_panel'))
+    return render_template('Admin_Pages/edit_product_page.html', product=product)
+    
+@app.route('/terms')
+def terms():
+    return render_template('User_Authentication_Pages/terms_and_conditions.html')
 
 @app.route('/')
 def index():
@@ -19,29 +107,34 @@ def index():
 @app.route('/storefront')
 def storefront():
     conn = get_db_connection()
-    products = conn.execute('SELECT * FROM products').fetchall()
+    products = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
     conn.close()
-    return render_template('main_storefront.html', products=products)
+    return render_template('Search_And_Storefront_Pages/main_storefront.html', products=products)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+    next_url = request.form.get('redirect_referrer') or request.args.get('next') or request.referrer or url_for('index')
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE email = ? AND password = ?', (email, password)).fetchone()
+        user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         conn.close()
-        if user:
+        if user and check_password_hash(user['password'], password):
             session['user'] = user['email']
             session['first_name'] = user['first_name'] if 'first_name' in user.keys() else ''
             session['last_name'] = user['last_name'] if 'last_name' in user.keys() else ''
             session['is_admin'] = bool(user['admin']) if 'admin' in user.keys() else False
-            return redirect(url_for('index'))
+            # Redirect to next_url if not login or signup page, else to index
+            if next_url and ('/login' not in next_url and '/signup' not in next_url):
+                return redirect(next_url)
+            else:
+                return redirect(url_for('index'))
         else:
             error = 'Invalid credentials.'
-    return render_template('main_login.html', error=error)
+    return render_template('User_Authentication_Pages/main_login.html', error=error)
 
 
 # Logout route
@@ -51,12 +144,18 @@ def logout():
     session.pop('first_name', None)
     session.pop('last_name', None)
     session.pop('is_admin', None)
-    return redirect(url_for('index'))
+    next_url = request.referrer or url_for('index')
+    # Avoid redirecting back to login or signup page after logout
+    if next_url and ('/login' not in next_url and '/signup' not in next_url):
+        return redirect(next_url)
+    else:
+        return redirect(url_for('index'))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
+    next_url = request.form.get('redirect_referrer') or request.referrer or url_for('index')
     if request.method == 'POST':
         import re
         email = request.form['email']
@@ -81,8 +180,9 @@ def signup():
         else:
             conn = get_db_connection()
             try:
+                hashed_pw = generate_password_hash(password)
                 conn.execute('INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)',
-                             (email, password, first_name, last_name))
+                             (email, hashed_pw, first_name, last_name))
                 conn.commit()
                 # Fetch the new user to check admin status (should be False by default)
                 user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
@@ -91,11 +191,15 @@ def signup():
                 session['first_name'] = user['first_name'] if user and 'first_name' in user.keys() else ''
                 session['last_name'] = user['last_name'] if user and 'last_name' in user.keys() else ''
                 session['is_admin'] = bool(user['admin']) if user and 'admin' in user.keys() else False
-                return redirect(url_for('index'))
+                # Redirect to next_url if not login or signup page, else to index
+                if next_url and ('/login' not in next_url and '/signup' not in next_url):
+                    return redirect(next_url)
+                else:
+                    return redirect(url_for('index'))
             except sqlite3.IntegrityError:
                 error = 'Email already registered.'
             conn.close()
-    return render_template('main_signup.html', error=error)
+    return render_template('User_Authentication_Pages/main_signup.html', error=error)
 
 @app.route('/cart')
 def cart():
@@ -124,7 +228,7 @@ def cart():
     tax_amount = total_amount * 0.10
     final_total = total_amount + tax_amount
     
-    return render_template('main_cart.html', 
+    return render_template('Item_Purchase_Pages/main_cart.html', 
                          cart_products=cart_products, 
                          subtotal=total_amount,
                          tax=tax_amount,
@@ -181,6 +285,148 @@ def remove_from_cart(product_id):
 
 
 # Debug CLI options
+
+
+# Checkout route
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    if not session.get('user'):
+        return redirect(url_for('login'))
+    import json
+    from datetime import datetime
+    cart_items = session.get('cart', [])
+    # POST: Record order, set stock to zero for all products in cart
+    if request.method == 'POST':
+        if cart_items:
+            conn = get_db_connection()
+            # Set stock to zero
+            for item in cart_items:
+                conn.execute('UPDATE products SET stock = 0 WHERE id = ?', (item['product_id'],))
+            # Prepare order data
+            user_email = session.get('user')
+            user = conn.execute('SELECT * FROM users WHERE email = ?', (user_email,)).fetchone() if user_email else None
+            user_id = user['id'] if user else None
+            address = ', '.join([
+                request.form.get('street', ''),
+                request.form.get('city', ''),
+                request.form.get('state', ''),
+                request.form.get('zip', ''),
+                request.form.get('country', '')
+            ])
+            items = []
+            total_cost = 0
+            for item in cart_items:
+                product = conn.execute('SELECT * FROM products WHERE id = ?', (item['product_id'],)).fetchone()
+                if product:
+                    items.append({
+                        'product_id': product['id'],
+                        'name': product['name'],
+                        'quantity': item['quantity'],
+                        'price': product['price']
+                    })
+                    total_cost += product['price'] * item['quantity']
+            # Insert order
+            conn.execute('''
+                INSERT INTO orders (user_id, order_time, total_cost, address, items)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                user_id,
+                datetime.now().isoformat(),
+                total_cost,
+                address,
+                json.dumps(items)
+            ))
+            conn.commit()
+            conn.close()
+            session['cart'] = []
+        return render_template('Item_Purchase_Pages/order_confirmation.html')
+    # GET: Show checkout form
+    total_amount = 0
+    if cart_items:
+        conn = get_db_connection()
+        for item in cart_items:
+            product = conn.execute('SELECT * FROM products WHERE id = ?', (item['product_id'],)).fetchone()
+            if product:
+                subtotal = product['price'] * item['quantity']
+                total_amount += subtotal
+        conn.close()
+    tax_amount = total_amount * 0.10
+    final_total = total_amount + tax_amount
+    user_email = session.get('user', '')
+    first_name = session.get('first_name', '')
+    last_name = session.get('last_name', '')
+    return render_template('Item_Purchase_Pages/main_checkout.html', total_cost="{:.2f}".format(final_total), user_email=user_email, first_name=first_name, last_name=last_name)
+
+# Admin panel route
+@app.route('/admin')
+def admin_panel():
+    if not session.get('user') or not session.get('is_admin'):
+        return redirect(url_for('index'))
+    conn = get_db_connection()
+    products = conn.execute('SELECT * FROM products').fetchall()
+    conn.close()
+    return render_template('Admin_Pages/admin_table_page.html', products=products)
+
+
+
+
+# Edit product (GET handled elsewhere)
+@app.route('/admin/edit/<int:product_id>', methods=['POST'])
+def admin_edit_product(product_id):
+    if not session.get('user') or not session.get('is_admin'):
+        return redirect(url_for('index'))
+
+    name = request.form['name']
+    original_artist = request.form['original_artist']
+    price = float(request.form['price'])
+    painting_orientation = request.form.get('painting_orientation', '')
+    price_range = request.form.get('price_range', '')
+    date_category = request.form.get('date_category', '')
+    art_movement = request.form.get('art_movement', '')
+    painting_type = request.form.get('painting_type', '')
+    stock = int(request.form.get('stock', 1))
+    description = request.form.get('description', '')
+
+    # Handle image upload
+    image = request.form.get('current_image', '')
+    if 'image' in request.files and request.files['image'].filename:
+        image_file = request.files['image']
+        image = image_file.filename
+        product_images_path = os.path.join('static', 'Product Images', image)
+        image_file.save(product_images_path)
+
+    conn = get_db_connection()
+    conn.execute('''
+        UPDATE products SET
+            name=?,
+            original_artist=?,
+            price=?,
+            image=?,
+            painting_orientation=?,
+            price_range=?,
+            date_category=?,
+            art_movement=?,
+            painting_type=?,
+            stock=?,
+            description=?
+        WHERE id=?
+    ''', (name, original_artist, price, image, painting_orientation, price_range, date_category, art_movement, painting_type, stock, description, product_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_panel'))
+
+# Delete product
+@app.route('/admin/delete/<int:product_id>', methods=['POST'])
+def admin_delete_product(product_id):
+    if not session.get('user') or not session.get('is_admin'):
+        return redirect(url_for('index'))
+    conn = get_db_connection()
+    conn.execute('DELETE FROM products WHERE id=?', (product_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_panel'))
+
+# Debug CLI options
 import sys
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -204,7 +450,4 @@ if __name__ == '__main__':
             print('Unknown debug command.')
     else:
         app.run(debug=True)
-
-if __name__ == '__main__':
-    app.run(debug=True)
 

@@ -1,0 +1,22 @@
+<!-- Optional: Unregister old service workers for cache cleanup -->
+<script>
+// Uncomment to manually unregister all service workers (run once if needed)
+// navigator.serviceWorker.getRegistrations().then(regs => {
+//   regs.forEach(reg => reg.unregister());
+// });
+</script>
+<!-- Collectors Delight PWA Manifest & Service Worker Registration -->
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/Website Images/easel_logo.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/Website Images/easel_logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/Website Images/easel_logo.png">
+<meta name="application-name" content="Collectors Delight">
+<meta name="description" content="Collectors Delight - Lost & Found Art Marketplace. Discover, buy, and sell rare and missing artworks.">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/static/sw.js');
+  });
+}
+</script>

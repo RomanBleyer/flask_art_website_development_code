@@ -1,0 +1,21 @@
+{
+  "name": "Collectors Delight",
+  "short_name": "Collectors Delight",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "Collectors Delight - Lost & Found Art Marketplace. Discover, buy, and sell rare and missing artworks.",
+  "icons": [
+    {
+      "src": "/static/Website Images/easel_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/Website Images/easel_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

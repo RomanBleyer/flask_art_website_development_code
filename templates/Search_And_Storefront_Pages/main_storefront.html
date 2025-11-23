@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storefront - Collectors Delight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #F0AD64, #FBC87A);
+            min-height: 100vh;
+        }
+        
+        /* Custom search box styling */
+        .search-container {
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .scrollable-dropdown {
+            height: auto;
+            max-height: 320px;
+            overflow-x: hidden;
+        }
+        
+        .search-panel .btn {
+            background-color: #F5F5DC;
+            border: 1px solid #ddd;
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .search-panel .btn:hover {
+            background-color: #7BA7D7;
+            color: white;
+        }
+        
+        .form-control {
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid #ddd;
+        }
+        
+        .input-group-text {
+            background-color: #7BA7D7;
+            border: 1px solid #7BA7D7;
+            color: white;
+        }
+        
+        .storefront-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .filters-sidebar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .sort-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .sort-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .category-filters {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 150px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .filter-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            min-width: 140px;
+        }
+        
+        .filter-select:focus {
+            border-color: #7BA7D7;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(123, 167, 215, 0.25);
+        }
+        
+        .products-section {
+            flex: 1;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 2.5rem;
+        }
+        
+        .product-info {
+            padding: 25px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+        
+        .product-content {
+            flex-grow: 1;
+        }
+        
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            margin-top: 0;
+        }
+        
+        .product-artist {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #7BA7D7;
+            margin-bottom: 15px;
+        }
+        
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .product-tag {
+            background: #f8f9fa;
+            color: #666;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .add-to-cart-btn {
+            background-color: #7BA7D7;
+            border: none;
+            margin-top: auto;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #6a9bc9;
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+    <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; flex: 1;">
+            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
+            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+        </div>
+        <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div class="search-container" style="max-width: 500px; width: 100%;">
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" name="search" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px 0 0 25px; border: 1px solid #ddd; border-right: none;">
+                    <button class="btn btn-outline-secondary btn-lg" type="button" style="font-size: 1.2rem; border-radius: 0 25px 25px 0; border: 1px solid #ddd; border-left: none;">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+            {% if session.get('user') %}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    {% if session.get('is_admin') %}
+                    <a href="/admin" style="text-decoration: none;">
+                        <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa fa-cogs"></i> Admin Panel
+                        </button>
+                    </a>
+                    {% endif %}
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 500; color: #333; white-space: nowrap; display: inline-block;">
+                        {{ session.get('first_name', '') }} {{ session.get('last_name', '') }}
+                    </span>
+                    <a href="#" style="text-decoration: none;">
+                        <button class="btn btn-outline-secondary" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                            <i class="fa fa-user"></i>
+                        </button>
+                    </a>
+                    <a href="/logout" style="text-decoration: none;">
+                        <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
+                            <i class="fa fa-sign-out-alt"></i> Logout
+                        </button>
+                    </a>
+                </div>
+            {% else %}
+                <a href="/login" style="text-decoration: none;">
+                    <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                        <i class="fa fa-sign-in-alt"></i>
+                        Login
+                    </button>
+                </a>
+                <a href="/signup" style="text-decoration: none;">
+                    <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
+                        <i class="fa fa-user-plus"></i>
+                        Sign Up
+                    </button>
+                </a>
+            {% endif %}
+            <a href="/cart" style="text-decoration: none;">
+                <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
+                    <i class="fa fa-shopping-cart"></i>
+                    View Cart
+                </button>
+            </a>
+        </div>
+    </nav>
+    
+    <main style="padding-top: 80px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%;">
+        <h1 style="text-align: center; font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: white; margin: 40px auto; width: 100%;">Storefront</h1>
+        
+        <div class="storefront-content">
+            <!-- Horizontal Filters Bar -->
+            <div class="filters-sidebar">
+                <div class="category-filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Orientation</label>
+                        <select class="filter-select" id="orientationFilter">
+                            <option value="">All Orientations</option>
+                            <option value="Landscape">Landscape</option>
+                            <option value="Portrait">Portrait</option>
+                            <option value="Square">Square</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Price Range</label>
+                        <select class="filter-select" id="priceRangeFilter">
+                            <option value="">All Price Ranges</option>
+                            <option value="0-5 mil">0-5 mil</option>
+                            <option value="5-20 mil">5-20 mil</option>
+                            <option value="20-50 mil">20-50 mil</option>
+                            <option value="50+ mil">50+ mil</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Date Stolen</label>
+                        <select class="filter-select" id="dateFilter">
+                            <option value="">All Time Periods</option>
+                            <option value="1900 to 1950">1900 to 1950</option>
+                            <option value="1950 to 1970">1950 to 1970</option>
+                            <option value="1970 to 1990">1970 to 1990</option>
+                            <option value="1990 to present">1990 to present</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Art Movement</label>
+                        <select class="filter-select" id="artMovementFilter">
+                            <option value="">All Art Movements</option>
+                            <option value="Renaissance">Renaissance</option>
+                            <option value="Baroque">Baroque</option>
+                            <option value="Impressionism">Impressionism</option>
+                            <option value="Post-Impressionism">Post-Impressionism</option>
+                            <option value="Cubism">Cubism</option>
+                            <option value="Abstract">Abstract</option>
+                            <option value="Modern">Modern</option>
+                            <option value="Contemporary">Contemporary</option>
+                            <option value="Classical">Classical</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Type of Painting</label>
+                        <select class="filter-select" id="paintingTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="Subject portrait">Subject Portrait</option>
+                            <option value="Landscape Rendition">Landscape Rendition</option>
+                            <option value="Object portrait">Object Portrait</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Section -->
+            <div class="products-section">
+                <div class="products-grid" id="productsGrid">
+                    <!-- Dynamic products from database -->
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='Product Images/' + product.image) }}" 
+                                 alt="{{ product.name }}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-content">
+                                <div class="product-name">{{ product.name }}</div>
+                                <div class="product-artist">{{ product.original_artist }}</div>
+                                <div class="product-price">${{ "{:,}".format(product.price) }}</div>
+                                <div class="product-tags">
+                                    {% set tags = [
+                                        (product.painting_orientation.title() if product.painting_orientation else 'Unknown'),
+                                        (product.price_range if product.price_range else 'Unknown'),
+                                        (product.date_category if product.date_category else 'Unknown'),
+                                        (product.art_movement if product.art_movement else 'Unknown'),
+                                        (product.painting_type if product.painting_type else 'Unknown')
+                                    ] %}
+                                    {% for tag in tags %}
+                                        {% if tag != 'Other' and tag != 'Unknown' %}
+                                            <span class="product-tag">{{ tag }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="/add_to_cart/{{ product.id }}" class="add-to-cart-btn flex-fill" style="text-decoration: none; color: inherit; text-align: center;">
+                                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                                </a>
+                                <a href="/product/{{ product.id }}" class="btn btn-outline-secondary flex-fill" style="border-radius: 8px; font-weight: 600;">
+                                    <i class="fa fa-info-circle"></i> Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        $(document).ready(function(e){
+            // Store original products HTML for filtering (delay to ensure DOM is ready)
+            setTimeout(function() {
+                window.originalProductsHTML = $('#productsGrid').html();
+            }, 100);
+            
+            $('.dropdown-menu .dropdown-item').click(function(e) {
+                e.preventDefault();
+                var param = $(this).attr("data-value");
+                var concept = $(this).text();
+                $('#search_concept').text(concept);
+                $('#search_param').val(param);
+            });
+            
+            // Handle search on Enter key
+            $('#search').on('keyup', function(evt){
+                if(evt.keyCode === 13){
+                    // Perform search here
+                    console.log('Searching for:', $(this).val(), 'in category:', $('#search_param').val());
+                }
+            });
+            
+            // Add to cart functionality
+            function addToCart(productId) {
+                // Add your cart functionality here
+                alert('Added product ID ' + productId + ' to cart!');
+                console.log('Adding product to cart:', productId);
+            }
+            
+            // Filter functionality
+            function filterProducts() {
+                const orientation = $('#orientationFilter').val();
+                const priceRange = $('#priceRangeFilter').val();
+                const dateCategory = $('#dateFilter').val();
+                const artMovement = $('#artMovementFilter').val();
+                const paintingType = $('#paintingTypeFilter').val();
+                
+                console.log('Filter values:', { orientation, priceRange, dateCategory, artMovement, paintingType });
+                
+                // Get all product cards from original list
+                let products = window.originalProductsHTML; // Use the HTML string
+                
+                // Reset to original state
+                $('#productsGrid').html(products);
+                
+                // Filter products based on selected criteria
+                $('.product-card').each(function() {
+                    const $product = $(this);
+                    const tags = $product.find('.product-tag').map(function() {
+                        return $(this).text().trim();
+                    }).get();
+                    
+                    let shouldShow = true;
+                    
+                    if (orientation && orientation !== '' && orientation !== 'All Orientations' && !tags.includes(orientation)) {
+                        shouldShow = false;
+                    }
+                    if (priceRange && priceRange !== '' && priceRange !== 'All Price Ranges' && !tags.includes(priceRange)) {
+                        shouldShow = false;
+                    }
+                    if (dateCategory && dateCategory !== '' && dateCategory !== 'All Time Periods' && !tags.includes(dateCategory)) {
+                        shouldShow = false;
+                    }
+                    if (artMovement && artMovement !== '' && artMovement !== 'All Art Movements' && !tags.includes(artMovement)) {
+                        shouldShow = false;
+                    }
+                    if (paintingType && paintingType !== '' && paintingType !== 'All Types' && !tags.includes(paintingType)) {
+                        shouldShow = false;
+                    }
+                    
+                    if (!shouldShow) {
+                        $product.hide();
+                    }
+                });
+                
+                // Check if any products are visible and show message if none
+                if ($('.product-card:visible').length === 0) {
+                    $('#productsGrid').append('<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #666;"><i class="fa fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i><h3>No artworks found</h3><p>Try adjusting your filter criteria</p></div>');
+                }
+            }
+            
+            // Attach filter event listeners
+            $('#orientationFilter, #priceRangeFilter, #dateFilter, #artMovementFilter, #paintingTypeFilter').on('change', filterProducts);
+        });
+    </script>
+</body>
+</html>
