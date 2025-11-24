@@ -1,3 +1,4 @@
+
 from flask import jsonify
 from flask import Flask, render_template, session, request, jsonify, redirect, url_for
 import sqlite3
@@ -7,6 +8,10 @@ import random
 
 app = Flask(__name__)
 app.secret_key = 'some-idiot-told-me-to-change-this'
+
+@app.route('/navbartest')
+def navbartest():
+    return render_template('nav_bar_test.html')
 
 @app.route('/search_suggestions')
 def search_suggestions():
@@ -116,8 +121,17 @@ def index():
 def storefront():
     conn = get_db_connection()
     products = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
+    date_categories = [row['date_category'] for row in conn.execute('SELECT DISTINCT date_category FROM products').fetchall() if row['date_category']]
+    art_movements = [row['art_movement'] for row in conn.execute('SELECT DISTINCT art_movement FROM products').fetchall() if row['art_movement']]
+    painting_types = [row['painting_type'] for row in conn.execute('SELECT DISTINCT painting_type FROM products').fetchall() if row['painting_type']]
     conn.close()
-    return render_template('Product_Display_Pages/storefront.html', products=products)
+    return render_template(
+        'Product_Display_Pages/storefront.html',
+        products=products,
+        date_categories=date_categories,
+        art_movements=art_movements,
+        painting_types=painting_types
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -367,8 +381,17 @@ def admin_panel():
         return redirect(url_for('index'))
     conn = get_db_connection()
     products = conn.execute('SELECT * FROM products').fetchall()
+    date_categories = [row['date_category'] for row in conn.execute('SELECT DISTINCT date_category FROM products').fetchall() if row['date_category']]
+    art_movements = [row['art_movement'] for row in conn.execute('SELECT DISTINCT art_movement FROM products').fetchall() if row['art_movement']]
+    painting_types = [row['painting_type'] for row in conn.execute('SELECT DISTINCT painting_type FROM products').fetchall() if row['painting_type']]
     conn.close()
-    return render_template('Admin_Pages/admin_table.html', products=products)
+    return render_template(
+        'Admin_Pages/admin_table.html',
+        products=products,
+        date_categories=date_categories,
+        art_movements=art_movements,
+        painting_types=painting_types
+    )
 
 
 

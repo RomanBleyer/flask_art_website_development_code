@@ -118,6 +118,16 @@
             font-size: 0.85rem;
             transition: all 0.3s;
             min-width: 140px;
+            direction: ltr;
+            /* Always open downwards */
+            position: relative;
+            z-index: 1;
+            /* Forcing dropdown arrow to always point down */
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%237BA7D7" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px 16px;
         }
         
         .filter-select:focus {
@@ -233,9 +243,10 @@
 </head>
 <body>
     <nav style="background-color: white; height: 80px; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; flex: 1; gap: 18px;">
-            <img src="{{ url_for('static', filename='Website Images/easel_logo.png') }}" alt="Logo" style="height: 80px; width: 54px; object-fit: contain; margin-right: 18px; display: block;">
-            <a href="/" style="text-decoration: none; color: #333; font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin-left: 10px;">Collectors Delight</a>
+        <div style="display: flex; align-items: center; flex: 1; gap: 18px; margin-left: 0;">
+            <a href="/" style="display: block;">
+                <img src="{{ url_for('static', filename='Website Images/logo.png') }}" alt="Logo" style="height: 80px; object-fit: cover; margin-right: 18px; display: block; margin-left: 0;">
+            </a>
         </div>
         <div style="flex: 2; display: flex; justify-content: center; align-items: center; height: 100%;">
             <div class="search-container" style="max-width: 500px; width: 100%; display: flex; align-items: center; gap: 18px;">
@@ -244,8 +255,8 @@
                         Storefront
                     </button>
                 </a>
-                <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative;">
-                    <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px; border: 1px solid #ddd; font-weight: 500;" autocomplete="off">
+                <form action="/search" method="get" class="input-group input-group-lg" autocomplete="off" style="position:relative; display:flex; align-items:center; height:44px; margin:0;">
+                    <input type="text" class="form-control" name="q" id="search" placeholder="Search artworks..." style="font-size: 1.1rem; border-radius: 25px; border: 1px solid #ddd; font-weight: 500; height: 44px; margin: 0; padding-top: 0; padding-bottom: 0; align-self: center;" autocomplete="off">
                     <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:white; border-radius:0 0 15px 15px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1001; display:none; max-height:320px; overflow-y:auto;"></div>
                 </form>
                 <script>
@@ -327,7 +338,7 @@
                     {% if session.get('is_admin') %}
                     <a href="/admin" style="text-decoration: none;">
                         <button class="btn btn-outline-warning" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-right: 5px; color: #f0ad4e; border: 2px solid #f0ad4e; background: white; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa fa-cogs"></i> Admin Panel
+                            <i class="fa fa-cogs"></i> Admin
                         </button>
                     </a>
                     {% endif %}
@@ -341,20 +352,18 @@
                     </a>
                     <a href="/logout" style="text-decoration: none;">
                         <button class="btn btn-outline-danger" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 8px 16px; margin-left: 5px;">
-                            <i class="fa fa-sign-out-alt"></i> Logout
+                            Logout
                         </button>
                     </a>
                 </div>
             {% else %}
                 <a href="/login" style="text-decoration: none;">
                     <button class="btn btn-outline-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                        <i class="fa fa-sign-in-alt"></i>
                         Login
                     </button>
                 </a>
                 <a href="/signup" style="text-decoration: none;">
                     <button class="btn btn-primary" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: #7BA7D7; border-color: #7BA7D7;">
-                        <i class="fa fa-user-plus"></i>
                         Sign Up
                     </button>
                 </a>
@@ -362,7 +371,7 @@
             <a href="/cart" style="text-decoration: none;">
                 <button class="btn btn-outline-success" style="border-radius: 20px; font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
                     <i class="fa fa-shopping-cart"></i>
-                    View Cart
+                    Cart
                 </button>
             </a>
         </div>
@@ -403,10 +412,9 @@
                         <label class="filter-label">Date Stolen</label>
                         <select class="filter-select" id="dateFilter">
                             <option value="">All Time Periods</option>
-                            <option value="1900 to 1950">1900 to 1950</option>
-                            <option value="1950 to 1970">1950 to 1970</option>
-                            <option value="1970 to 1990">1970 to 1990</option>
-                            <option value="1990 to present">1990 to present</option>
+                            {% for date in date_categories %}
+                                <option value="{{ date }}">{{ date }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     
@@ -414,15 +422,9 @@
                         <label class="filter-label">Art Movement</label>
                         <select class="filter-select" id="artMovementFilter">
                             <option value="">All Art Movements</option>
-                            <option value="Renaissance">Renaissance</option>
-                            <option value="Baroque">Baroque</option>
-                            <option value="Impressionism">Impressionism</option>
-                            <option value="Post-Impressionism">Post-Impressionism</option>
-                            <option value="Cubism">Cubism</option>
-                            <option value="Abstract">Abstract</option>
-                            <option value="Modern">Modern</option>
-                            <option value="Contemporary">Contemporary</option>
-                            <option value="Classical">Classical</option>
+                            {% for movement in art_movements %}
+                                <option value="{{ movement }}">{{ movement }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     
@@ -430,10 +432,22 @@
                         <label class="filter-label">Type of Painting</label>
                         <select class="filter-select" id="paintingTypeFilter">
                             <option value="">All Types</option>
-                            <option value="Subject portrait">Subject Portrait</option>
-                            <option value="Landscape Rendition">Landscape Rendition</option>
-                            <option value="Object portrait">Object Portrait</option>
-                            <option value="Other">Other</option>
+                            {% for type in painting_types %}
+                                <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                        <style>
+                        #paintingTypeFilter {
+                            direction: ltr;
+                            position: relative;
+                            z-index: 1;
+                            appearance: none;
+                            background-image: url('data:image/svg+xml;utf8,<svg fill="%237BA7D7" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+                            background-repeat: no-repeat;
+                            background-position: right 12px center;
+                            background-size: 16px 16px;
+                        }
+                        </style
                         </select>
                     </div>
                 </div>
